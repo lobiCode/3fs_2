@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "encoding/binary"
+	"github.com/soniah/evaler"
 	"golang.org/x/crypto/bcrypt"
 	"math"
 	"net"
@@ -92,4 +92,22 @@ func (te TextEncoder) R(conn net.Conn) {
 	conn.Write(b)
 	conn.Close()
 
+}
+
+type BasicArithmetic struct {
+	B []byte
+}
+
+func (ba BasicArithmetic) R(conn net.Conn) {
+
+	// TODO najdi boljsi lib
+	x, err := evaler.Eval(string(ba.B))
+
+	if err != nil {
+		conn.Write([]byte("wrong arg"))
+		conn.Close()
+		return
+	}
+	conn.Write([]byte(x.String()))
+	conn.Close()
 }

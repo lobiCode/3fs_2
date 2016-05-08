@@ -13,10 +13,11 @@ const (
 )
 
 var (
-	JobQueue  chan Job
-	FIBONACCI = []byte("Fibonacci")
-	REVERSE   = []byte("ReverseText")
-	ENCODER   = []byte("TextEncoder")
+	JobQueue   chan Job
+	FIBONACCI  = []byte("Fibonacci")
+	REVERSE    = []byte("ReverseText")
+	ENCODER    = []byte("TextEncoder")
+	ARITHMETIC = []byte("BasicArithmetic")
 )
 
 func main() {
@@ -67,8 +68,10 @@ func dispatchers(conn net.Conn) {
 		j = Job{conn, ReverseText{req[1]}}
 	case bytes.Compare(req[0], ENCODER) == 0:
 		j = Job{conn, TextEncoder{req[1]}}
+	case bytes.Compare(req[0], ARITHMETIC) == 0:
+		j = Job{conn, BasicArithmetic{req[1]}}
 	default:
-		b = []byte("is unkowon resolver")
+		b = []byte("is unknown resolver")
 		req = append(req, b)
 		conn.Write(bytes.Join(req, []byte{' '}))
 		conn.Close()
