@@ -2,9 +2,8 @@ package main
 
 import (
 	"bytes"
+	"github.com/lobiCode/3fs_2/qman"
 	"net"
-	_ "strconv"
-	_ "strings"
 )
 
 const (
@@ -13,11 +12,7 @@ const (
 )
 
 var (
-	JobQueue   chan Job
-	FIBONACCI  = []byte("Fibonacci")
-	REVERSE    = []byte("ReverseText")
-	ENCODER    = []byte("TextEncoder")
-	ARITHMETIC = []byte("BasicArithmetic")
+	JobQueue chan qman.Job
 )
 
 func main() {
@@ -43,33 +38,37 @@ func main() {
 
 func Init() {
 
-	JobQueue = make(chan Job, BUFFER)
+	JobQueue = make(chan qman.Job, BUFFER)
 
 	for i := 0; i < N; i++ {
-		w := CreateWorker(JobQueue)
+		w := qman.CreateWorker(JobQueue)
 		w.Start()
 	}
 }
 
 func dispatchers(conn net.Conn) {
 
-	var j Job
+	var j qman.Job
 	b := make([]byte, 512)
 	conn.Read(b) // TODO len n,
 
 	req := bytes.Split(b, []byte{'\n'})
 	req = bytes.Split(req[0], []byte{' '})
-	// TODO len(req) < 2  close, return
+	if len(req) < 2 {
+		conn.Write([]byte("Wrong usage\n"))
+		conn.Close()
+		return
+	}
 
 	switch {
-	case bytes.Compare(req[0], FIBONACCI) == 0:
-		j = Job{conn, Fibonacci{req[1]}}
-	case bytes.Compare(req[0], REVERSE) == 0:
-		j = Job{conn, ReverseText{req[1]}}
-	case bytes.Compare(req[0], ENCODER) == 0:
-		j = Job{conn, TextEncoder{req[1]}}
-	case bytes.Compare(req[0], ARITHMETIC) == 0:
-		j = Job{conn, BasicArithmetic{req[1]}}
+	case bytes.Compare(req[0], qman.FIBONACCI) == 0:
+		j = qman.Job{conn, qman.Fibonacci{req[1]}}
+	case bytes.Compare(req[0], qman.REVERSE) == 0:
+		j = qman.Job{conn, qman.ReverseText{req[1]}}
+	case bytes.Compare(req[0], qman.ENCODER) == 0:
+		j = qman.Job{conn, qman.TextEncoder{req[1]}}
+	case bytes.Compare(req[0], qman.ARITHMETIC) == 0:
+		j = qman.Job{conn, qman.BasicArithmetic{req[1]}}
 	default:
 		b = []byte("is unknown resolver")
 		req = append(req, b)
