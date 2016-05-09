@@ -31,7 +31,7 @@ func main() {
 			continue
 
 		}
-		dispatchers(conn)
+		dispatcher(conn)
 	}
 
 }
@@ -46,7 +46,7 @@ func Init() {
 	}
 }
 
-func dispatchers(conn net.Conn) {
+func dispatcher(conn net.Conn) {
 
 	var j qman.Job
 	b := make([]byte, 512)
@@ -62,13 +62,13 @@ func dispatchers(conn net.Conn) {
 
 	switch {
 	case bytes.Compare(req[0], qman.FIBONACCI) == 0:
-		j = qman.Job{conn, qman.Fibonacci{req[1]}}
+		j = qman.Job{qman.Fibonacci{req[1], conn}}
 	case bytes.Compare(req[0], qman.REVERSE) == 0:
-		j = qman.Job{conn, qman.ReverseText{req[1]}}
+		j = qman.Job{qman.ReverseText{req[1], conn}}
 	case bytes.Compare(req[0], qman.ENCODER) == 0:
-		j = qman.Job{conn, qman.TextEncoder{req[1]}}
+		j = qman.Job{qman.TextEncoder{req[1], conn}}
 	case bytes.Compare(req[0], qman.ARITHMETIC) == 0:
-		j = qman.Job{conn, qman.BasicArithmetic{req[1]}}
+		j = qman.Job{qman.BasicArithmetic{req[1], conn}}
 	default:
 		b = []byte("is unknown resolver")
 		req = append(req, b)
