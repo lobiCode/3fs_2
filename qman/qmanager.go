@@ -121,7 +121,7 @@ func (ba BasicArithmetic) R() {
 	}
 
 	if i == len(ba.B) {
-		writeAndClose([]byte("wrong arg"), ba.Conn)
+		writeAndClose([]byte("wrong arg.\n"), ba.Conn)
 		return
 	}
 
@@ -130,19 +130,20 @@ func (ba BasicArithmetic) R() {
 
 	i1, err := strconv.Atoi(s1)
 	if err != nil {
-		writeAndClose([]byte(err.Error()), ba.Conn)
+		writeAndClose([]byte("arg. is not an int\n"), ba.Conn)
 		return
 	}
 	i2, err := strconv.Atoi(s2)
 	if err != nil {
-		writeAndClose([]byte(err.Error()), ba.Conn)
+		writeAndClose([]byte("arg is not an int\n"), ba.Conn)
 		return
 	}
 
 	if b == '/' {
 		fb, err := div(i1, i2)
 		if err == nil {
-			writeAndClose([]byte(fb.String()), ba.Conn)
+			fbs := fb.String() + "\n"
+			writeAndClose([]byte(fbs), ba.Conn)
 			return
 		} else {
 			writeAndClose([]byte(err.Error()), ba.Conn)
@@ -161,7 +162,8 @@ func (ba BasicArithmetic) R() {
 		ib1.Mul(ib1, ib2)
 	}
 
-	writeAndClose([]byte(ib1.String()), ba.Conn)
+	ib1s := ib1.String() + "\n"
+	writeAndClose([]byte(ib1s), ba.Conn)
 
 }
 
@@ -177,7 +179,7 @@ func findOpera(b byte) bool {
 func div(i, j int) (bf *big.Float, err error) {
 
 	if j == 0 {
-		return bf, errors.New("can't divide by zero")
+		return bf, errors.New("can't divide by zero\n")
 	}
 
 	if i == 0 {
