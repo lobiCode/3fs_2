@@ -1,9 +1,10 @@
 package qman
 
 import (
-	"github.com/soniah/evaler"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"math"
+	"math/big"
 	"net"
 	"strconv"
 )
@@ -33,8 +34,8 @@ type Worker struct {
 	JobQueue chan Job
 }
 
-func CreateWorker(jobQueue chan Job) *Worker {
-	return &Worker{jobQueue}
+func CreateWorker(jobQueue chan Job) Worker {
+	return Worker{jobQueue}
 }
 
 func (w *Worker) Start() {
@@ -60,6 +61,7 @@ func (f Fibonacci) R() {
 	if err != nil {
 		// TODO err msq, close, return
 	}
+	// TODO handlaj ce je n prevelik
 
 	nfloat := float64(n)
 	fib := (math.Pow(PHI, nfloat) - math.Pow(Phi, nfloat)) / R
@@ -110,14 +112,88 @@ type BasicArithmetic struct {
 
 func (ba BasicArithmetic) R() {
 
-	// TODO najdi boljsi lib
-	x, err := evaler.Eval(string(ba.B))
+	var i int
+	var b byte
+	for i, b = range ba.B {
+		if findOpera(b) {
+			break
+		}
+	}
 
-	if err != nil {
-		ba.Conn.Write([]byte("wrong arg"))
-		ba.Conn.Close()
+	if i == len(ba.B) {
+		writeAndClose([]byte("wrong arg"), ba.Conn)
 		return
 	}
-	ba.Conn.Write([]byte(x.String()))
-	ba.Conn.Close()
+
+	s1 := string(ba.B[:i])
+	s2 := string(ba.B[i+1:])
+
+	i1, err := strconv.Atoi(s1)
+	if err != nil {
+		writeAndClose([]byte(err.Error()), ba.Conn)
+		return
+	}
+	i2, err := strconv.Atoi(s2)
+	if err != nil {
+		writeAndClose([]byte(err.Error()), ba.Conn)
+		return
+	}
+
+	if b == '/' {
+		fb, err := div(i1, i2)
+		if err == nil {
+			writeAndClose([]byte(fb.String()), ba.Conn)
+			return
+		} else {
+			writeAndClose([]byte(err.Error()), ba.Conn)
+			return
+		}
+	}
+
+	ib1 := big.NewInt(int64(i1))
+	ib2 := big.NewInt(int64(i2))
+	switch {
+	case b == '+':
+		ib1.Add(ib1, ib2)
+	case b == '-':
+		ib1.Sub(ib1, ib2)
+	case b == '*':
+		ib1.Mul(ib1, ib2)
+	}
+
+	writeAndClose([]byte(ib1.String()), ba.Conn)
+
+}
+
+func findOpera(b byte) bool {
+
+	if b == '+' || b == '-' || b == '*' || b == '/' {
+		return true
+	}
+
+	return false
+}
+
+func div(i, j int) (bf *big.Float, err error) {
+
+	if j == 0 {
+		return bf, errors.New("can't divide by zero")
+	}
+
+	if i == 0 {
+		return big.NewFloat(0), nil
+	}
+
+	fb1 := big.NewFloat(float64(i))
+	fb2 := big.NewFloat(float64(j))
+
+	fb1.Quo(fb1, fb2)
+
+	return fb1, nil
+}
+
+func writeAndClose(b []byte, conn net.Conn) {
+
+	conn.Write(b)
+	conn.Close()
 }
