@@ -59,7 +59,8 @@ func (f Fibonacci) R() {
 	if err != nil {
 		// TODO err msq, close, return
 	}
-	// TODO handlaj ce je n prevelik
+	// TODO handlaj ce je n prevelik naredi z
+	// math/biq
 
 	nfloat := float64(n)
 	fib := (math.Pow(PHI, nfloat) - math.Pow(Phi, nfloat)) / R
