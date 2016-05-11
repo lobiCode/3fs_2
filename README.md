@@ -3,10 +3,10 @@
 Build a simple queue manager which receives requests of four different tasks 
 and then distributes them among four types of processes:
 
-*Fibonacci resolver: Takes an integer and returns the result of Fibonacci function.
-*Basic arithmetic resolver: Takes basic arithmetic problem and returns the result.
-*Reverse text resolver: Takes mirrored text and returns it reversed.
-*Text encoder: Takes string of text and returns BCrypt encrypted hash.
+Markup : *Fibonacci resolver: Takes an integer and returns the result of Fibonacci function.
+		*Basic arithmetic resolver: Takes basic arithmetic problem and returns the result.
+		*Reverse text resolver: Takes mirrored text and returns it reversed.
+		*Text encoder: Takes string of text and returns BCrypt encrypted hash.
 
 Each type of process/server runs in several instances. Queue manager has to decide
 which instance to use based on availability (meaning that the instance is not processing any task at the time).
