@@ -1,10 +1,8 @@
 package qman
 
 import (
-	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"math"
-	"math/big"
 	"net"
 	"strconv"
 )
@@ -112,86 +110,14 @@ type BasicArithmetic struct {
 
 func (ba BasicArithmetic) R() {
 
-	var i int
-	var b byte
-	for i, b = range ba.B {
-		if findOpera(b) {
-			break
-		}
-	}
-
-	if i == len(ba.B) {
-		writeAndClose([]byte("wrong arg.\n"), ba.Conn)
-		return
-	}
-
-	s1 := string(ba.B[:i])
-	s2 := string(ba.B[i+1:])
-
-	i1, err := strconv.Atoi(s1)
+	s, err := Dsya(ba.B)
 	if err != nil {
-		writeAndClose([]byte("arg. is not an int\n"), ba.Conn)
-		return
-	}
-	i2, err := strconv.Atoi(s2)
-	if err != nil {
-		writeAndClose([]byte("arg is not an int\n"), ba.Conn)
+		writeAndClose([]byte(err.Error()), ba.Conn)
 		return
 	}
 
-	if b == '/' {
-		fb, err := div(i1, i2)
-		if err == nil {
-			fbs := fb.String() + "\n"
-			writeAndClose([]byte(fbs), ba.Conn)
-			return
-		} else {
-			writeAndClose([]byte(err.Error()), ba.Conn)
-			return
-		}
-	}
+	writeAndClose([]byte(s), ba.Conn)
 
-	ib1 := big.NewInt(int64(i1))
-	ib2 := big.NewInt(int64(i2))
-	switch {
-	case b == '+':
-		ib1.Add(ib1, ib2)
-	case b == '-':
-		ib1.Sub(ib1, ib2)
-	case b == '*':
-		ib1.Mul(ib1, ib2)
-	}
-
-	ib1s := ib1.String() + "\n"
-	writeAndClose([]byte(ib1s), ba.Conn)
-
-}
-
-func findOpera(b byte) bool {
-
-	if b == '+' || b == '-' || b == '*' || b == '/' {
-		return true
-	}
-
-	return false
-}
-
-func div(i, j int) (bf *big.Float, err error) {
-
-	if j == 0 {
-		return bf, errors.New("can't divide by zero\n")
-	}
-
-	if i == 0 {
-		return big.NewFloat(0), nil
-	}
-
-	fb1 := big.NewFloat(float64(i))
-	fb2 := big.NewFloat(float64(j))
-
-	fb1.Quo(fb1, fb2)
-
-	return fb1, nil
 }
 
 func writeAndClose(b []byte, conn net.Conn) {
