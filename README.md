@@ -64,13 +64,14 @@ $ echo TextEncoder foo | nc localhost 1234
 
 ```shell
 $ echo BasicArithmetic 4+4*8-2/7 | nc localhost 1234
-35.71428571
+-> 35.71428571
 ```
 
 Or you can use simple client in client folder
 
 ```go
 go run client BasicArithmetic 4+4*8-2/7
+-> 35.71428571
 ```
 
 
